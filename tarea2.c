@@ -23,7 +23,7 @@ typedef struct Cancion{
 int leer_archivo_g();
 void leer_archivo_s();
 void faltan_args();
-Cancion crear_cancion(char*, char*, char*);
+Cancion* crear_cancion(char*, char*, char*);
 void liberar_cancion(Cancion);
 
 
@@ -43,10 +43,12 @@ int main(int argc, char** argv)
 		case 103: //g
 			printf("Genero\n");
 			canciones = leer_archivo_g();
-			printf("%s\n", pp[0].id);
-			printf("%s\n", pp[1].id);
-			printf("%s\n", pp[0].genero);
-			printf("%s\n", pp[1].genero);
+			printf("%s\n", pp[2000].id);
+			printf("%s\n", pp[1000].id);
+			printf("%s\n", pp[2000].genero);
+			printf("%s\n", pp[1000].genero);
+			printf("%s\n", pp[2000].autor);
+			printf("%s\n", pp[1000].autor);
 			break;
 
 
@@ -56,8 +58,13 @@ int main(int argc, char** argv)
 	}
 
 	for (int i=0;i<canciones;i++){
-		liberar_cancion(pp[i]);
+
+		free(pp[i].id);
+		free(pp[i].genero);
+		free(pp[i].autor);
+
 	}
+	free(pp);
 
 	return 0;
 }
@@ -77,27 +84,19 @@ void faltan_args(){
 
 
 
-Cancion crear_cancion(char * id ,char * autor, char * genero){
-	Cancion can;
-	can.id = malloc(sizeof(id));
-	can.autor = malloc(sizeof(autor));
-	can.genero = malloc(sizeof(genero));
+// Cancion crear_cancion(char * id ,char * autor, char * genero){
+// 	can.id = malloc(sizeof(id));
+// 	can.autor = malloc(sizeof(autor));
+// 	can.genero = malloc(sizeof(genero));
 
-	strcpy(can.id, id);
-	strcpy(can.autor, autor);
-	strcpy(can.genero, genero);
+// 	strcpy(can.id, id);
+// 	strcpy(can.autor, autor);
+// 	strcpy(can.genero, genero);
 
-	return can;
-}
+// 	return can;
+// }
 
 
-void liberar_cancion(Cancion can){
-		free(can.id);
-		free(can.genero);
-		free(can.autor);
-		//free(can->modo);
-
-}
 
 
 int leer_archivo_g(){
@@ -105,9 +104,7 @@ int leer_archivo_g(){
 	FILE* archivo;
 
 	archivo = fopen("genres.txt", "r");
-	char *genero = malloc(20*sizeof(char));
-	char *id = malloc(30*sizeof(char));
-	char *autor = malloc(50*sizeof(char));
+
 
  	if (archivo == NULL) {
     		printf("No se pudo abrir el archivo, revise que esta en la carpeta correcta.\n");
@@ -117,30 +114,20 @@ int leer_archivo_g(){
   		int i=0;
   		while(!feof(archivo)){
 
+  			pp = realloc(pp, ((i+3)*sizeof(Cancion)));
+  			pp[i].genero = malloc(20*sizeof(char));
+  			pp[i].id = malloc(30*sizeof(char));
+  			pp[i].autor = malloc(50*sizeof(char));
 
+ 			fscanf(archivo, "%[^;];%[^;];%[^\n]", pp[i].genero, pp[i].id, pp[i].autor);
 
-
-
-  			pp = realloc(pp, (sizeof(pp)+sizeof(Cancion)));
-
- 			fscanf(archivo, "%[^;];%[^;];%[^\n]", genero, id, autor);
- 			// printf("%d\n", i);
- 			// printf("%s\n", genero);
- 			// printf("%s\n", id);
- 			// printf("%s\n", autor);
-
-
-
- 			pp[i] = crear_cancion(id, autor, genero);
  			i++;
 
 
 
-			}
-		
-	printf("hola\n");
+		}
 
-		
+
 	fclose(archivo);
 	return i;
 	}
