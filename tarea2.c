@@ -21,7 +21,7 @@ typedef struct Cancion{
 } Cancion;
 
 int leer_archivo_g();
-void leer_archivo_s();
+void leer_archivo_s(int);
 void faltan_args();
 Cancion* crear_cancion(char*, char*, char*);
 void liberar_cancion(Cancion);
@@ -43,12 +43,18 @@ int main(int argc, char** argv)
 		case 103: //g
 			printf("Genero\n");
 			canciones = leer_archivo_g();
+
+			leer_archivo_s(canciones);
 			printf("%s\n", pp[2000].id);
 			printf("%s\n", pp[1000].id);
 			printf("%s\n", pp[2000].genero);
 			printf("%s\n", pp[1000].genero);
 			printf("%s\n", pp[2000].autor);
 			printf("%s\n", pp[1000].autor);
+			printf("%s\n", pp[2000].modo);
+			printf("%s\n", pp[1000].modo);
+			printf("%d\n", pp[2000].popularidad);
+			printf("%d\n", pp[1000].popularidad);
 			break;
 
 
@@ -62,6 +68,7 @@ int main(int argc, char** argv)
 		free(pp[i].id);
 		free(pp[i].genero);
 		free(pp[i].autor);
+		free(pp[i].modo);
 
 	}
 	free(pp);
@@ -114,10 +121,11 @@ int leer_archivo_g(){
   		int i=0;
   		while(!feof(archivo)){
 
-  			pp = realloc(pp, ((i+3)*sizeof(Cancion)));
+  			pp = realloc(pp, ((i+1)*sizeof(Cancion)));
   			pp[i].genero = malloc(20*sizeof(char));
   			pp[i].id = malloc(30*sizeof(char));
   			pp[i].autor = malloc(50*sizeof(char));
+  			pp[i].modo = malloc(7*sizeof(char));
 
  			fscanf(archivo, "%[^;];%[^;];%[^\n]", pp[i].genero, pp[i].id, pp[i].autor);
 
@@ -134,32 +142,48 @@ int leer_archivo_g(){
 }
 
 
-// void leer_archivo_s(){
-// 	// Parte archivo
-// 	FILE* archivo;
+void leer_archivo_s(int x){
+	// Parte archivo
+	FILE* archivo;
 	
-// 	archivo = fopen("songs.txt", "r");
+	archivo = fopen("songs.txt", "r");
 
  	
-//  	if (archivo == NULL) {
-//     		printf("No se pudo abrir el archivo, revise que esta en la carpeta correcta.\n");
-//     	} 
-//     else {
-//   		int i=0;
-//   		while(!feof(archivo)){
+ 	if (archivo == NULL) {
+    		printf("No se pudo abrir el archivo, revise que esta en la carpeta correcta.\n");
+    	} 
+    else {
+  		int i=0;
+  		while(!feof(archivo)){
+  			char* pop = malloc(4*sizeof(char));
+  			char* id = malloc(30*sizeof(char));
+  			char* modo = malloc(7*sizeof(char));
 
 
 
+  			fscanf(archivo, "%[^;];%[^;];%[^\n]", id, pop, modo);
+  			// printf("%s\n", id);
+  			// printf("%s\n", pop);
+  			// printf("%s\n", modo);
 
 
+  			for (int k=0;k<x;k++){
+  				if ((strcmp(pp[k].id,id))==0){
+  					pp[k].popularidad = atoi(pop);
+  					strcpy(pp[k].modo, modo);
+  					printf("%d", pp[k].popularidad);
+  					break;
+  				}
+  			}
 
-
-
-//  			i++;
-// 			}
+  			free(pop);
+  			free(id);
+  			free(modo);
+ 			i++;
+			}
 		
 		
-// 	fclose(archivo);
+	fclose(archivo);
 
-// 	}
-// }
+	}
+}
