@@ -21,11 +21,11 @@ typedef struct Cancion{
 } Cancion;
 
 typedef struct Artista{
-	char ** generos;
+	char * genero;
 	char * nombre;
 	int q_canciones;
 	int suma_pop;
-	int popularidad;
+	float popularidad;
 } Artista;
 
 
@@ -39,9 +39,10 @@ void swap(int, int);
 void Sort(int*, int);
 int compare_pop(const void *p1, const void *p2);
 int compare_modo(const void *p1, const void *p2);
-void crear_artistas(Cancion*);
+int crear_artistas(Cancion*, int, char*);
 int array_genero(Cancion*, int);
-
+void pop_art(int);
+int bin_search(float, float, int);
 
 
 
@@ -54,6 +55,7 @@ int main(int argc, char** argv)
 {
 	int canciones;
 	int gens;
+	int as;
 	if (argc == 1){
 		faltan_args();
 		return 0;
@@ -62,12 +64,24 @@ int main(int argc, char** argv)
 
 	switch (argv[1][1]){
 		case 103: //g
-			printf("Genero\n");
+			printf("Genero %s\n", argv[2]);
 			canciones = leer_archivo_g();
 			leer_archivo_s(canciones);
-			gens = array_genero(pp, canciones);
+			as = crear_artistas(pp, canciones, argv[2]);
+			pop_art(as);
+			qsort(artistas, as, sizeof(Artista), compare_pop);
 
-			// qsort(pp, canciones, sizeof(Cancion), compare_pop);
+
+			int desde = bin_search(0, as, atoi(argv[3]));
+
+
+			for (int i = desde; i<as; i++)
+			{	
+				printf("%s: ", artistas[i].nombre);
+				printf("%.2f\n", artistas[i].popularidad);
+			}
+
+
 			break;
 
 
@@ -100,8 +114,15 @@ int main(int argc, char** argv)
 
 	}
 
+	// for (int p=0; p<as; p++)
+	// {
+	// 	free(artistas[p].genero);
+	// 	free(artistas[p].nombre);
+	// }
+
 	free(generos);
 	free(pp);
+	free(artistas);
 
 	return 0;
 }
@@ -193,12 +214,12 @@ void leer_archivo_s(int x){
 
 int compare_pop(const void *p1, const void *p2)
 {
-	const Cancion *c1 = p1;    
-	const Cancion *c2 = p2;
+	const Artista *a1 = p1;    
+	const Artista *a2 = p2;
 
-	if (c1->popularidad < c2->popularidad)
+	if (a1->popularidad < a2->popularidad)
 		return -1;
-	else if (c1->popularidad > c2->popularidad)
+	else if (a1->popularidad > a2->popularidad)
 		return 1;
 	else
 		return 0;
@@ -245,19 +266,84 @@ int array_genero(Cancion * songs, int n_canciones){
 }
 
 
-// void crear_artistas(Cancion* pp, int l_pp){
+int crear_artistas(Cancion* pp, int l_pp, char* genero){
+	int q_artistas = 0;
+	for (int i=0;i<l_pp;i++){
+		if (!strcmp(pp[i].genero, genero)){
+			if (artistas == NULL){
+				artistas = realloc(artistas, sizeof(Artista));
 
-// 	for (int i=0;i<l_pp;i++){
-// 		if (artistas == NULL){
-// 			artistas = realloc(artistas, sizeof(Artista));
-// 		}
+				artistas[q_artistas].genero = malloc(20*sizeof(char));
+	  			artistas[q_artistas].nombre = malloc(30*sizeof(char));
+
+				artistas[q_artistas].genero = pp[i].genero;
+				artistas[q_artistas].nombre = pp[i].autor;
+
+				artistas[q_artistas].q_canciones = 1;
+				artistas[q_artistas].suma_pop = pp[i].popularidad;
+				q_artistas++;
+
+			}
+			else{
+				int existe = 0;
+				int indice = 0;
+				for (int k = 0; k < q_artistas; k++)
+				{
+					if (strcmp(artistas[k].nombre, pp[i].autor)==0){
+						existe = 1;
+						indice = k;
+					}
+				}
+
+				if (existe){
+					artistas[indice].q_canciones +=1;
+					artistas[indice].suma_pop += pp[i].popularidad;
+
+				}
+				else {
+
+					artistas = realloc(artistas,q_artistas*4 * sizeof(Artista));
+
+					artistas[q_artistas].genero = malloc(20*sizeof(char));
+		  			artistas[q_artistas].nombre = malloc(30*sizeof(char));
+
+					artistas[q_artistas].genero = pp[i].genero;
+					artistas[q_artistas].nombre = pp[i].autor;
+					artistas[q_artistas].q_canciones = 1;
+					artistas[q_artistas].suma_pop = pp[i].popularidad;
+					q_artistas++;
+				}
 
 
+			}
 
+		}
 
+	}
 
+	return q_artistas;
+}
 
+void pop_art(int x){
+	for (int i = 0; i < x; i++)
+	{
+		artistas[i].popularidad = (float)artistas[i].suma_pop/(float)artistas[i].q_canciones;
+	}
 
-// 	}
+}
 
-// }
+int bin_search(float min, float max, int limite){
+	int pivot = (min+max)/2;
+	if (artistas[pivot].popularidad < limite){
+		min = pivot;
+		return bin_search(min, max, limite);
+	}
+	if (artistas[pivot].popularidad > limite){
+		max = pivot;
+		return bin_search(min, max, limite);
+	}
+	if (artistas[pivot].popularidad == limite){
+		return pivot;
+	}
+	return pivot;
+}
