@@ -72,6 +72,21 @@ int main(int argc, char** argv)
 			qsort(artistas, as, sizeof(Artista), compare_pop);
 
 
+			if (artistas[canciones-1].popularidad<atoi(argv[3])){
+				printf("No existen canciones tan populares.\n");
+				for (int i=0;i<canciones;i++){
+
+					free(pp[i].id);
+					free(pp[i].genero);
+					free(pp[i].autor);
+					free(pp[i].modo);
+
+				}
+				free(generos);
+				free(pp);
+				free(artistas);
+				return 0;
+			}
 			int desde = bin_search(0, as, atoi(argv[3]));
 
 
@@ -113,12 +128,6 @@ int main(int argc, char** argv)
 		free(pp[i].modo);
 
 	}
-
-	// for (int p=0; p<as; p++)
-	// {
-	// 	free(artistas[p].genero);
-	// 	free(artistas[p].nombre);
-	// }
 
 	free(generos);
 	free(pp);
@@ -335,15 +344,20 @@ void pop_art(int x){
 int bin_search(float min, float max, int limite){
 	int pivot = (min+max)/2;
 	if (artistas[pivot].popularidad < limite){
-		min = pivot;
+		min = pivot+1;
+		
 		return bin_search(min, max, limite);
 	}
 	if (artistas[pivot].popularidad > limite){
-		max = pivot;
+		max = pivot-1;
+		
 		return bin_search(min, max, limite);
 	}
-	if (artistas[pivot].popularidad == limite){
+	if ((int)(artistas[pivot].popularidad) == limite){
 		return pivot;
 	}
 	return pivot;
 }
+
+
+
